@@ -8,6 +8,7 @@ import storage
 import os
 import time
 import sys
+import rtc
 
 LOOP_PERIOD=0.1     # seconds between reading samples
 SD_CACHE_LIMIT=10   # number of readings to cache before writing to SD
@@ -128,7 +129,9 @@ while gps.datetime.tm_year==0:
     led.value=not led.value
     gps.update()
     
-    
+r=rtc.RTC()
+r.datetime=gps.datetime # set the localtime
+
 createCSVheaders()
    
 try:
