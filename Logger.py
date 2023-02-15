@@ -22,9 +22,19 @@ from file_handler import FileHandler
 from neocolours import *
 
 
-LOOP_PERIOD=0.1     # seconds between reading samples
+LOOP_PERIOD=0.5     # seconds between reading samples
 SD_CACHE_LIMIT=10   # number of readings to cache before writing to SD
 LOG_FILE="/sd/Track.log"
+
+# status colours
+PROGRAM_STARTING=CYAN       # 5 flashes
+ERROR_NO_SD_CARD=MAGENTA    # flashing
+WAITING_FOR_GPS_FIX=RED     # flashing
+WAITING_FOR_TIMESTAMP=GREEN # flashing
+LOGGING=GREEN               # solid
+ERROR_HALTED=WHITE          # flashing
+ERROR_WRITING_TO_LOG=YELLOW # flashing
+
 
 # Pins used
 SDA=board.GP4 # accelerometer
@@ -72,7 +82,7 @@ def setNeoPixel(colour):
     
 # flash 5 times to show we are starting
 for i in range(5):
-    neoBlink(CYAN)
+    neoBlink(PROGRAM_STARTING)
 
 setNeoPixel(BLACK)
 
@@ -87,7 +97,7 @@ try:
     dirList=os.listdir('/sd')
 except Exception as e:
     led.value=False
-    errorBlink(MAGENTA,e)
+    errorBlink(ERROR_NO_SD_CARD,e)
 
 # setup the GPS
 uart = busio.UART(TX, RX, baudrate=GPS_BAUD)
@@ -150,12 +160,12 @@ def saveData(force=False):
                 cache=[]
 
         except Exception as e:
-            errorBlink(YELLOW,f"Exception recording data: {e}")
+            errorBlink(ERROR_WRITING_TO_LOG,f"Exception recording data: {e}")
 
 def runLoop():
     global gps,LOOP_PERIOD
     
-    setNeoPixel(GREEN) # solid green indicates we are all go
+    setNeoPixel(LOGGING) # solid green indicates we are all go
             
     while True:
         loop_start=time.monotonic()
@@ -167,7 +177,7 @@ def runLoop():
 ###################################
 
 while not gps.has_fix:
-    neoBlink(RED)
+    neoBlink(WAITING_FOR_GPS_FIX)
     gps.update()
     
 setNeoPixel(BLACK)
@@ -176,7 +186,7 @@ setNeoPixel(BLACK)
 # correct datetime (localtime) which is needed to ensure log files have valid names
 # and creation dates
 while gps.datetime.tm_year==0: # year is usually the last part to arrive
-    neoBlink(YELLOW)
+    neoBlink(WAITING_FOR_TIMESTAMP)
     gps.update()
 
 setNeoPixel(BLACK)
@@ -198,4 +208,4 @@ except Exception as e:
     saveData(True)
     storage.umount("/sd")
     storage.enable_usb_drive()
-    errorBlink(CYAN,f"Terminated - Exception {e}")
+    errorBlink(ERROR_HALTED,f"Terminated - Exception {e}")

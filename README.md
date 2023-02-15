@@ -24,8 +24,23 @@ The CircuitPython libraries required are all available in the downloadable Circu
 * adafruit_register
 * adafruit_gps
 * adafruit_mp6050
-* adafruit_sdcard
 * adafruit_ticks
+
+## Neopixel
+
+The neopixel is used to indicate status. The colours are defined in neoColours.py
+
+At startup the neopixel is BLACK
+
+Flashing :- 
+MAGENTA - SD card no available for some reason at startup
+CYAN- SD card ok, continuing (5 flashes)
+RED - waiting for GPS fix
+GREEN- waiting for date & time from GPS
+WHITE - program terminated due to exception
+
+Solid GREEN indicates that the GPS got a fix and timestamp and that logging has started.
+
 
 # Prototype
 
